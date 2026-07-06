@@ -2,24 +2,29 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default [
-    js.configs.recommended,
-    ...tseslint.configs.recommendedTypeChecked,
-    {
-        files: ['src/**/*.ts'],
+  js.configs.recommended,
 
-        languageOptions: {
-            parserOptions: {
-                project: './tsconfig.json'
-            }
-        },
+  ...tseslint.configs.recommendedTypeChecked,
 
-        rules: {
-            'no-console': [
-                'warn',
-                {
-                    allow: ['warn', 'error']
-                }
-            ]
+  {
+    files: ['src/**/*.ts'],
+
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.eslint.json'
+      }
+    },
+
+    rules: {
+      'no-console': [
+        'warn',
+        {
+          allow: ['warn', 'error']
         }
+      ],
+
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error'
     }
+  }
 ];
