@@ -1,38 +1,100 @@
-import { Application as PixiApplication } from 'pixi.js';
+import * as PIXI from 'pixi.js';
 
-import { AppConfig } from '@/shared/config/AppConfig';
-import { Renderer } from '@/rendering/Renderer';
+import { TileType } from '@/map/TileType';
+import { TileView } from '@/rendering/map/TileView';
 
-export class PixiRenderer implements Renderer {
-    private readonly application: PixiApplication;
+export class PixiRenderer {
+    private app!: PIXI.Application;
 
-    public constructor() {
-        this.application = new PixiApplication();
-    }
+    private readonly worldLayer = new PIXI.Container();
+
+    private readonly mapLayer = new PIXI.Container();
+
+    private readonly entityLayer = new PIXI.Container();
+
+    private readonly sprites = new Map<number, PIXI.Graphics>();
+
+    private readonly tiles = new Map<string, TileView>();
 
     public async initialize(container: HTMLElement): Promise<void> {
-        await this.application.init({
-            resizeTo: window,
-            background: AppConfig.rendering.backgroundColor,
-            antialias: AppConfig.rendering.antialias,
-            autoDensity: AppConfig.rendering.autoDensity
+        this.app = new PIXI.Application();
+
+        await this.app.init({
+            width: container.clientWidth || 800,
+            height: container.clientHeight || 600,
+            background: 0x111111,
+            antialias: true
         });
 
-        container.replaceChildren(this.application.canvas);
+        this.worldLayer.addChild(this.mapLayer);
+        this.worldLayer.addChild(this.entityLayer);
+
+        this.app.stage.addChild(this.worldLayer);
+
+        container.appendChild(this.app.canvas);
     }
 
-    public resize(_width: number, _height: number): void {
-        // resizeTo: window выполняет изменение размеров автоматически.
+    public getCanvas(): HTMLCanvasElement {
+        return this.app.canvas;
+    }
+
+    public updateTile(
+        x: number,
+        y: number,
+        tileType: number
+    ): void {
+        const key = `${x}:${y}`;
+
+        if (this.tiles.has(key)) {
+            return;
+        }
+
+        const tile = new TileView(
+            x,
+            y,
+            tileType as TileType
+        );
+
+        this.tiles.set(key, tile);
+
+        this.mapLayer.addChild(tile.graphics);
+    }
+
+    public updateEntity(
+        id: number,
+        x: number,
+        y: number,
+        _spriteId: string
+    ): void {
+        let sprite = this.sprites.get(id);
+
+        if (sprite === undefined) {
+            sprite = new PIXI.Graphics();
+
+            sprite
+                .circle(0, 0, 12)
+                .fill(0x00ffcc);
+
+            this.entityLayer.addChild(sprite);
+
+            this.sprites.set(id, sprite);
+        }
+
+        sprite.position.set(x, y);
+    }
+
+    public resize(
+        width: number,
+        height: number
+    ): void {
+        this.app.renderer.resize(width, height);
     }
 
     public destroy(): void {
-        this.application.destroy(
-            true,
-            {
-                children: true,
-                texture: true,
-                textureSource: true
-            }
-        );
+        this.tiles.clear();
+
+        this.sprites.clear();
+
+        this.app.destroy(true);
     }
 }

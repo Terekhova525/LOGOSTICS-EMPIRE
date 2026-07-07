@@ -1,0 +1,1 @@
+export type EventHandler<TEvent> = (event: Readonly<TEvent>) => void;
