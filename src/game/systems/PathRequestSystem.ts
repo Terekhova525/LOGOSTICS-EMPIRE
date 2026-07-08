@@ -8,14 +8,13 @@ import { PositionComponent } from '@/ecs/components/PositionComponent';
 import { CourierComponent } from '@/game/components/CourierComponent';
 import { TargetComponent } from '@/game/components/TargetComponent';
 import { PathComponent } from '@/game/components/PathComponent';
+import { OrderTargetComponent } from '@/game/components/OrderTargetComponent';
 
 import { NavigationService } from '@/navigation/NavigationService';
 import { Pathfinder } from '@/navigation/Pathfinder';
 import { CoordinateConverter } from '@/navigation/CoordinateConverter';
 
 export class PathRequestSystem extends System {
-
-    private initialized = false;
 
     public constructor(
         private readonly navigation: NavigationService,
@@ -29,17 +28,12 @@ export class PathRequestSystem extends System {
         _time: Time
     ): void {
 
-        if (this.initialized) {
-            return;
-        }
-
-        this.initialized = true;
-
         const query = world.createQuery(
             CourierComponent,
             PositionComponent,
             TargetComponent
         );
+
 
         for (const entity of query.execute()) {
 
@@ -55,24 +49,65 @@ export class PathRequestSystem extends System {
                     TargetComponent
                 );
 
+
             if (
                 position === null ||
-                target === null
+                target === null ||
+                target.target === null
             ) {
                 continue;
             }
 
+
+            const orderTarget =
+                world.getComponent(
+                    target.target,
+                    OrderTargetComponent
+                );
+
+
+            if (
+                orderTarget === null
+            ) {
+                continue;
+            }
+
+
+            const existingPath =
+                world.getComponent(
+                    entity,
+                    PathComponent
+                );
+
+
+            if (
+                existingPath !== null
+            ) {
+                continue;
+            }
+
+
             const start =
                 this.navigation.findNearestNode(
-                    CoordinateConverter.worldToTileX(position.x),
-                    CoordinateConverter.worldToTileY(position.y)
+                    CoordinateConverter.worldToTileX(
+                        position.x
+                    ),
+                    CoordinateConverter.worldToTileY(
+                        position.y
+                    )
                 );
+
 
             const end =
                 this.navigation.findNearestNode(
-                    CoordinateConverter.worldToTileX(target.x),
-                    CoordinateConverter.worldToTileY(target.y)
+                    CoordinateConverter.worldToTileX(
+                        orderTarget.x
+                    ),
+                    CoordinateConverter.worldToTileY(
+                        orderTarget.y
+                    )
                 );
+
 
             if (
                 start === null ||
@@ -81,8 +116,10 @@ export class PathRequestSystem extends System {
                 continue;
             }
 
+
             const path =
                 new PathComponent();
+
 
             path.nodes.push(
                 ...this.pathfinder.find(
@@ -91,16 +128,20 @@ export class PathRequestSystem extends System {
                 )
             );
 
-            console.log(
-                'Generated path:',
-                path.nodes.length
-            );
 
             world.addComponent(
                 entity,
                 path
             );
+
+
+            console.log(
+                'Generated path:',
+                path.nodes.length
+            );
+
         }
+
     }
 
 }

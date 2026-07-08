@@ -71,9 +71,50 @@ export class PixiRenderer {
         if (sprite === undefined) {
             sprite = new PIXI.Graphics();
 
-            sprite
-                .circle(0, 0, 12)
-                .fill(0x00ffcc);
+            switch (_spriteId) {
+
+                case 'courier':
+
+                    sprite.circle(
+                        0,
+                        0,
+                        12
+                    );
+
+                    sprite.fill(
+                        0x00ffcc
+                    );
+
+                    break;
+
+                case 'order':
+
+                    sprite.rect(
+                        -6,
+                        -6,
+                        12,
+                        12
+                    );
+
+                    sprite.fill(
+                        0xffdd33
+                    );
+
+                    break;
+
+                default:
+
+                    sprite.circle(
+                        0,
+                        0,
+                        10
+                    );
+
+                    sprite.fill(
+                        0xffffff
+                    );
+
+            }
 
             this.entityLayer.addChild(sprite);
 

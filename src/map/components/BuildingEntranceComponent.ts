@@ -1,16 +1,14 @@
 import type { Component } from '@/ecs/Component';
 
-export class BuildingComponent implements Component {
+export class BuildingEntranceComponent implements Component {
 
     public static readonly type =
-        Symbol('BuildingComponent');
+        Symbol('BuildingEntranceComponent');
 
     public readonly type =
-        BuildingComponent.type;
+        BuildingEntranceComponent.type;
 
     public constructor(
-
-        public readonly id: number,
 
         public readonly tileX: number,
 

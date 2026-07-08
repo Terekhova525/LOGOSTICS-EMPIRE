@@ -38,6 +38,12 @@ import { Pathfinder } from '@/navigation/Pathfinder';
 
 import { SpawnOnRoadSystem } from '@/game/systems/SpawnOnRoadSystem';
 
+import { OrderSpawnSystem } from '@/game/systems/OrderSpawnSystem';
+
+import { OrderAssignSystem } from '@/game/systems/OrderAssignSystem';
+
+import { BuildingEntranceSystem } from '@/map/systems/BuildingEntranceSystem';
+
 export class GameWorld {
     private readonly world: World;
 
@@ -97,10 +103,7 @@ export class GameWorld {
 
         this.world.addComponent(
             courier,
-            new TargetComponent(
-                700,
-                100
-            )
+            new TargetComponent()
         );
 
         this.world.addComponent(
@@ -146,6 +149,18 @@ export class GameWorld {
             new BuildingBootstrapSystem(
                 city.getBuildingRegistry()
             )
+        );
+
+        this.world.addSystem(
+            new BuildingEntranceSystem()
+        );
+
+        this.world.addSystem(
+            new OrderSpawnSystem()
+        );
+
+        this.world.addSystem(
+            new OrderAssignSystem()
         );
 
         this.world.addSystem(
